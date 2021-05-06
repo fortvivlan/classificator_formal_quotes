@@ -124,19 +124,17 @@ def topictiling():
     print('Your models are as follows:')
     print(*filenames)
     modelname = input('What do we use?\n')
-    print('Loading LDA model...')  # LDA MODEL LOAD check it if you change model
+    print('Loading LDA model...') 
     ldamodel = pickle.load(open(os.path.join(p, modelname), 'rb'))
+    topics = len(set(ldamodel.values()))
     print('Loading data...')
     dataset, rawtext = load_data()
     windowsize = int(input('Window size: '))
-    topics = int(input('Quantity of topics: '))  # I guess I could code it into the model but I was too lazy
     print('Calculating vectors and cosine distances...')
     lost = 0  # to count texts lost due to their incoherent length
     breakpoints = {}
     pathtores = f'/home/al/PythonFiles/files/disser/experiments/experiment_{no}.txt'  # path to resulting text file
-    if os.path.exists(pathtores):  # to prevent script from endlessly adding to file
-        os.remove(pathtores)
-    finale = open(pathtores, 'a', encoding='utf8')
+    finale = open(pathtores, 'w', encoding='utf8')
     for k in range(len(dataset)):
         vectors = movement(dataset[k], windowsize, topics, ldamodel)
         if vectors:
