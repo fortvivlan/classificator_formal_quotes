@@ -49,13 +49,17 @@ def movement(doc, winsize, ntops, ldamodel):
         return
     vecs = []
     start = 0
-    end = winsize
-    # end = 1 - to get this to work you'd have to make several smart changes
-    for i in range(len(doc) - winsize):
+    end = 1
+    for i in range(len(doc) - 1):
         # This way we have a list twice the size of intervals, so that calculating cosines we'd go with step = 2
-        vecs.append(create_vector(doc[start:end], ntops, ldamodel))
-        vecs.append(create_vector(doc[end:end + winsize], ntops, ldamodel))
-        start += 1
+        if doc[end:]:
+            vecs.append(create_vector(doc[start:end], ntops, ldamodel))
+            if len(doc) - 1 - end >= winsize:
+                vecs.append(create_vector(doc[end:end + winsize], ntops, ldamodel))
+            else:
+                vecs.append(create_vector(doc[end:], ntops, ldamodel))
+        if end - start >= winsize:
+            start += 1
         end += 1
     return vecs
 
@@ -103,7 +107,7 @@ def splitter(cos, doc, winsize):
                 break
         dscore = 0.5 * (hl + hr - 2 * cos[i])
         if dscore > threshold:
-            breakerpoints.append(i + winsize)  # the algorithm works so that index + winsize gives the sent we need
+            breakerpoints.append(i + 1)  # list of cosines contains points between sents
     if not breakerpoints:  # no d-score appeared high enough to pass the threshold
         return
     # Segmenting work goes here
