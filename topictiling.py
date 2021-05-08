@@ -72,12 +72,10 @@ def cosine(vecs):
     return dists
 
 
-def splitter(cos, doc, winsize):
+def splitter(cos, doc):
     """ Segment a doc by d-scores """
     segmented = []
-    mean = sum(cos) / len(cos)
-    sigma = (sum((x - mean) ** 2 for x in cos) / len(cos)) ** 0.5
-    threshold = mean - sigma / 2
+    dscores = []
     # d-scores less than threshold are ok: d-score for a local max is 0, the greater d-score, the deeper local min
     breakerpoints = []
     for i in range(len(cos)):
@@ -105,8 +103,12 @@ def splitter(cos, doc, winsize):
                 r += 1
             else:
                 break
-        dscore = 0.5 * (hl + hr - 2 * cos[i])
-        if dscore > threshold:
+        dscores.append(0.5 * (hl + hr - 2 * cos[i]))
+    mean = sum(dscores) / len(dscores)
+    sigma = (sum((x - mean) ** 2 for x in dscores) / len(dscores)) ** 0.5
+    threshold = mean - sigma / 2
+    for i in range(len(dscores)):
+        if dscores[i] > threshold:
             breakerpoints.append(i + 1)  # list of cosines contains points between sents
     if not breakerpoints:  # no d-score appeared high enough to pass the threshold
         return
