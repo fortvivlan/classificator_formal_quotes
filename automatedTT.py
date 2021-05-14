@@ -43,8 +43,6 @@ def movement(doc, winsize, ntops, ldamodel):
     """ Calculates vectors for sents winsize, sort of sent 1-2 * 3-4, then 2-3 * 4-5 and so on. Be careful:
     first span of a winsize isn't being split, so you can't get a split between 1st and 2nd sents if your
     winsize is 2 """
-    if len(doc) <= winsize:  # needs to have at least winsize length
-        return
     vecs = []
     start = 0
     # end = winsize
@@ -105,7 +103,8 @@ def splitter(cos, doc):
         dscores.append(0.5 * (hl + hr - 2 * cos[i]))
     mean = sum(dscores) / len(dscores)
     sigma = (sum((x - mean) ** 2 for x in dscores) / len(dscores)) ** 0.5
-    threshold = mean - sigma / 2
+    # threshold = mean - sigma / 2
+    threshold = mean + 1.5 * sigma
     for i in range(len(dscores)):
         if dscores[i] > threshold:
             breakerpoints.append(i + 1)  # list of cosines contains points between sents
@@ -123,18 +122,17 @@ def splitter(cos, doc):
 
 
 def topictiling():
+    dataset, rawtext = load_data()
+    print('Loading data...')
     p = '/home/al/PythonFiles/files/disser/LDAs/'
     filenames = [name for name in os.listdir(p) if not os.path.splitext(name)[1] or os.path.isdir(name)]
     for modelname in filenames:
-        for windowsize in range(2, 5):
+        print(f'Loading LDA model {modelname}')
+        ldamodel = pickle.load(open(os.path.join(p, modelname), 'rb'))
+        topics = len(set(ldamodel.values()))
+        for windowsize in range(5, 11):
             no = f'{modelname}_{windowsize}'  # for file naming
-            print('Loading LDA model...')
-            ldamodel = pickle.load(open(os.path.join(p, modelname), 'rb'))
-            topics = len(set(ldamodel.values()))
-            print('Loading data...')
-            dataset, rawtext = load_data()
-            print('Calculating vectors and cosine distances...')
-            lost = 0  # to count texts lost due to their incoherent length
+            print(f'Window size {windowsize}: calculating vectors and cosine distances...')
             breakpoints = {}
             pathtores = f'/home/al/PythonFiles/files/disser/experiments/experiment_{no}.txt'  # path to resulting text
             finale = open(pathtores, 'w', encoding='utf8')
@@ -152,9 +150,6 @@ def topictiling():
                     else:
                         print('ZERO BREAKPOINTS FOUND', file=finale)
                     print('\n~~~ENDOFDOC~~~\n', file=finale)
-                else:
-                    lost += 1
-            print(f'{lost} texts shorter than windowsize')
             finale.close()
             pickle.dump(breakpoints, open(f'/home/al/PythonFiles/files/disser/experiments/breakpoints_{no}', 'wb'))
 

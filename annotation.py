@@ -41,7 +41,7 @@ def main():
     ''' Choosing dataset '''
     print('Badum-tss!')
     funcs = dict(getmembers(process, isfunction))
-    print('Available processes as far:', funcs.keys())
+    print('Available processes as far:', *list(funcs.keys()))
     choiceprocess = input('Which one we use?\n')
     processfunc = funcs.get(choiceprocess)
     if not processfunc:
@@ -92,7 +92,8 @@ def main():
         print('"""terms annotated. saving and printing..."""')
 
         ''' Saving annotation '''
-        namemodel = input(f'Number of topics was {tops}. Name your model file: ')
+        namemodel = f'{choiceprocess}_{tops}'
+        print(f'Saving as {namemodel}. There were {tops} topics.')
         pickle.dump(lda_model, open(f'/home/al/PythonFiles/files/disser/LDAs/{namemodel}', 'wb'))
     print('"""finished, exit"""')
 
