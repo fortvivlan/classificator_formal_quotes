@@ -1,6 +1,7 @@
 # heterogeneoustexts
 
 (Mallet LDA, конечно, не мой. http://mallet.cs.umass.edu/ )
+
 annotation - скрипт для обучения LDA-модели с заданными параметрами. Импортирует process - там содержатся варианты обработки датасета. 
 
 topictiling - скрипт для сегментации текста на основе обученной LDA-модели
