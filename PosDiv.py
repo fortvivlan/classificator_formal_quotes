@@ -5,22 +5,20 @@ from collections import Counter
 from morphoclass import MorphoToken
 
 
-def lex_div(dataset, name):
+def lex_div(dataset):
     poscount = Counter()
     tokencount = 0
     counter = 0
     for doc in dataset:
-        if counter >= 300:
+        if counter >= 600000:
             break
-        if 15 <= len(doc) <= 30:
-            counter += 1
-            for sent in doc:
-                for token in sent:
+        for sent in doc:
+            for token in sent:
+                if counter < 600000:
                     if token.category == 'word' and token.pos != 'PUNCT':
                         tokencount += 1
                         poscount[token.pos] += 1
-    if counter < 300:
-        print(f'{name} doesn\'t have enough docs. got only {counter}')
+                counter += 1
     res = {pos: round(poscount[pos] * 100 / tokencount, 2) for pos in poscount.keys()}
     return res
 
@@ -34,9 +32,9 @@ def main():
             continue
         fullp = os.path.join(p, f)
         data = pickle.load(open(fullp, 'rb'))
-        results[f] = lex_div(data, f)
+        results[f] = lex_div(data)
     df = pd.DataFrame.from_dict(results, orient='index')
-    df.to_excel('/home/al/PythonFiles/files/disser/readydata/posdiv.xlsx')
+    df.to_excel('posdiv.xlsx')
 
 
 if __name__ == '__main__':

@@ -6,9 +6,15 @@ from morphoclass import MorphoToken
 
 def quartilecounter(dataset):
     segment = []
+    counter = 0
     for doc in dataset:
+        if counter >= 60000:
+            break
         for sent in doc:
-            segment.append(len([token.form for token in sent if token.category == 'word']))
+            for token in sent:
+                if counter < 600000 and token.category == 'word':
+                    segment.append(len(token.form))
+                    counter += 1
     segment.sort()
     if segment:
         mean = round(sum(segment) / len(segment), 2)
@@ -42,10 +48,10 @@ def main():
         if os.path.splitext(f)[1] or os.path.isdir(f):
             continue
         fullp = os.path.join(p, f)
-        data = pickle.load(open(fullp, 'rb'))[:2000]
+        data = pickle.load(open(fullp, 'rb'))
         results[f] = quartilecounter(data)
     df = pd.DataFrame.from_dict(results, orient='index')
-    df.to_excel('sentlengths.xlsx')
+    df.to_excel('wordlengths.xlsx')
 
 
 if __name__ == '__main__':
