@@ -51,7 +51,7 @@ def cosines(vecs):
         segcos = {}
         for others in vecs:
             if vecs[others] is not vecs[seg]:
-                segcos[others] = dot(vecs[others], vecs[seg]) / (norms[others] * norms[seg])
+                segcos[others] = round(dot(vecs[others], vecs[seg]) / (norms[others] * norms[seg]), 4)
         cosine[seg].update(segcos)
     return cosine
 
@@ -63,7 +63,7 @@ def main():
     vecs = vectors(fulldata, allwords)
     results = cosines(vecs)
     df = pd.DataFrame.from_dict(results, orient='index')
-    df.to_excel('/home/al/PythonFiles/files/disser/readydata/cosines_5000f.xlsx')
+    df.to_excel('cosines_5000f.xlsx')
 
 
 if __name__ == '__main__':
