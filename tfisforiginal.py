@@ -26,7 +26,7 @@ def dictcreator(data):
     wordcount = Counter()
     for key in data:
         wordcount += Counter(data[key])
-    dictionary = {token for token, freq in sorted(wordcount.items(), key=lambda x: -x[1])[:5000]}
+    dictionary = {token for token, freq in sorted(wordcount.items(), key=lambda x: -x[1])[:10000]}
     return sorted(dictionary)
 
 
@@ -63,7 +63,7 @@ def main():
     vecs = vectors(fulldata, allwords)
     results = cosines(vecs)
     df = pd.DataFrame.from_dict(results, orient='index')
-    df.to_excel('cosines_5000f.xlsx')
+    df.to_excel('cosines_10000f.xlsx')
 
 
 if __name__ == '__main__':
