@@ -37,7 +37,7 @@ def main():
         result[name]['F-score'] = round(result[name]['F-score'], 3)
 
     df = pd.DataFrame.from_dict(result, orient='index')
-    df.to_excel('breakpoints_Series3.xlsx')
+    df.to_excel('breakpoints_Series4.xlsx')
 
 
 if __name__ == '__main__':

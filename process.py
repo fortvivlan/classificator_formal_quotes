@@ -81,7 +81,7 @@ def closedclassplus(dataset):
 
 
 def closedclassandnonwords(dataset):
-    """Like previous but with emoji"""
+    """Like previous but with all punct and emoji"""
     for i in range(len(dataset)):
         newdoc = []
         for sent in dataset[i]:
@@ -124,5 +124,15 @@ def pronsandother(dataset):
             newdoc.extend([token.lemma for token in sent
                            if token.category == 'word' and token.pos in {'PRON', 'PART', 'ADV', 'INTJ', 'NUM', 'PUNCT'}
                            or token.category != 'word'])
+        dataset[i] = newdoc
+    return dataset
+
+
+def justprons(dataset):
+    """Pronouns"""
+    for i in range(len(dataset)):
+        newdoc = []
+        for sent in dataset[i]:
+            newdoc.extend([token.lemma for token in sent if token.pos == 'PRON'])
         dataset[i] = newdoc
     return dataset

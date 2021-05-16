@@ -130,7 +130,7 @@ def topictiling():
         print(f'Loading LDA model {modelname}')
         ldamodel = pickle.load(open(os.path.join(p, modelname), 'rb'))
         topics = len(set(ldamodel.values()))
-        for windowsize in range(5, 11):
+        for windowsize in range(2, 5):
             no = f'{modelname}_{windowsize}'  # for file naming
             print(f'Window size {windowsize}: calculating vectors and cosine distances...')
             breakpoints = {}
