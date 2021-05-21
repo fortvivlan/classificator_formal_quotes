@@ -27,17 +27,18 @@ def main():
                 autoset[key] = []
             totalauto += len(autoset[key])
             gets += len(set(autoset[key]) & set(goldset[key]))
+            falses = set(autoset[key]) - set(goldset[key])
             falseneg += len(set(goldset[key]) - set(autoset[key]))
             closecallset = set()
-            for autopoint in autoset[key]:
+            for autopoint in falses:
                 for goldpoint in goldset[key]:
                     if abs(autopoint - goldpoint) <= 2:
                         closecallset.add(autopoint)
             closecall += len(closecallset)
         result[name]['Total points'] = totalauto
         result[name]['Correct guesses'] = gets
-        result[name]['Precision'] = gets / totalauto
-        result[name]['Recall'] = gets / (gets + falseneg)
+        result[name]['Precision'] = (gets + 0.5 * closecall) / totalauto
+        result[name]['Recall'] = (gets + 0.5 * closecall) / (gets + falseneg)
         result[name]['F-score'] = 2 * result[name]['Precision'] * result[name]['Recall'] / (result[name]['Precision'] + result[name]['Recall'])
         result[name]['Precision'] = round(result[name]['Precision'], 3)
         result[name]['Recall'] = round(result[name]['Recall'], 3)

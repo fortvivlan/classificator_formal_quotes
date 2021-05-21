@@ -104,7 +104,7 @@ def splitter(cos, doc):
     mean = sum(dscores) / len(dscores)
     sigma = (sum((x - mean) ** 2 for x in dscores) / len(dscores)) ** 0.5
     # threshold = mean - sigma / 2
-    threshold = mean + 1.5 * sigma
+    threshold = mean + sigma
     for i in range(len(dscores)):
         if dscores[i] > threshold:
             breakerpoints.append(i + 1)  # list of cosines contains points between sents
