@@ -93,7 +93,7 @@ def closedclassandnonwords(dataset):
 
 
 def closedclassadvs(dataset):
-    """Only words not in NOUN, VERB, ADJ, ADV"""
+    """Only words not in NOUN, VERB, ADJ"""
     for i in range(len(dataset)):
         newdoc = []
         for sent in dataset[i]:
@@ -134,5 +134,15 @@ def justprons(dataset):
         newdoc = []
         for sent in dataset[i]:
             newdoc.extend([token.lemma for token in sent if token.pos == 'PRON'])
+        dataset[i] = newdoc
+    return dataset
+
+
+def pronspartspunct(dataset):
+    """Pronouns"""
+    for i in range(len(dataset)):
+        newdoc = []
+        for sent in dataset[i]:
+            newdoc.extend([token.lemma for token in sent if token.category != 'word' or token.pos in {'PRON', 'PART'}])
         dataset[i] = newdoc
     return dataset

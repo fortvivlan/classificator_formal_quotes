@@ -21,12 +21,19 @@ def main():
         totalauto = 0
         gets = 0
         falseneg = 0
+        closecall = 0
         for key in goldset:
             if not autoset.get(key):
                 autoset[key] = []
             totalauto += len(autoset[key])
             gets += len(set(autoset[key]) & set(goldset[key]))
             falseneg += len(set(goldset[key]) - set(autoset[key]))
+            closecallset = set()
+            for autopoint in autoset[key]:
+                for goldpoint in goldset[key]:
+                    if abs(autopoint - goldpoint) <= 2:
+                        closecallset.add(autopoint)
+            closecall += len(closecallset)
         result[name]['Total points'] = totalauto
         result[name]['Correct guesses'] = gets
         result[name]['Precision'] = gets / totalauto
@@ -35,9 +42,10 @@ def main():
         result[name]['Precision'] = round(result[name]['Precision'], 3)
         result[name]['Recall'] = round(result[name]['Recall'], 3)
         result[name]['F-score'] = round(result[name]['F-score'], 3)
+        result[name]['Close call'] = closecall
 
     df = pd.DataFrame.from_dict(result, orient='index')
-    df.to_excel('breakpoints_Series4.xlsx')
+    df.to_excel('/home/al/PythonFiles/files/disser/breakpoints_total.xlsx')
 
 
 if __name__ == '__main__':

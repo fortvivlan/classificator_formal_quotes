@@ -1,23 +1,33 @@
+from morphoclass import MorphoToken
 import pickle
 import os
 
+from collections import Counter
+from nltk import ngrams
 from numpy.linalg import norm
 from numpy import dot
 
 
-def create_vector(win, ntops, ldamodel):
-    """ Creates a vector for a window span. Ntops - number of topics """
-    vec = [0] * ntops
-    wintoks = []
-    for sent in win:
-        wintoks.extend(sent)
-    for token in wintoks:
-        if token in ldamodel.keys():
-            vec[ldamodel[token] - 1] += 1
-    return vec, norm(vec)  # so we have both a vector itself and its norm in a tuple
+def make_ngrams(n):
+    bigrams = set()
+    # p = '/home/al/PythonFiles/files/disser/readydata/morpho/'
+    # files = os.listdir(p)
+    # for file in files:
+    #     if os.path.splitext(file)[1] or os.path.isdir(file):
+    #         continue
+    #     fullp = os.path.join(p, file)
+    #     dataset = pickle.load(open(fullp, 'rb'))
+    dataset = pickle.load(open('/home/al/PythonFiles/files/disser/readydata/morpho/PARTIAL_LJ', 'rb'))
+    for doc in dataset:
+        for sent in doc:
+            s = [token.pos for token in sent if token.category == 'word']
+            if len(s) > 1:
+                bigrams |= set(ngrams([token.pos for token in sent], n))
+        # print(f'{file} processed')
+    return {k: v for v, k in enumerate(bigrams)}
 
 
-def load_data():
+def load_data(n):
     """ Loads data... suddenly """
     datafull = pickle.load(open('/home/al/PythonFiles/files/disser/readydata/morpho/PARTIAL_LJ', 'rb'))[:500]
     data = []
@@ -26,12 +36,16 @@ def load_data():
         docnew = []
         doctext = []
         for sent in doc:
-            sentlemmas = []
+            sentpos = []
             senttext = []
             for token in sent:
-                sentlemmas.append(token.lemma)
                 senttext.append(token.form)
-            docnew.append(sentlemmas)
+                if token.category == 'word':
+                    sentpos.append(token.pos)
+            if len(sentpos) > 1:
+                docnew.append(list(ngrams(sentpos, n)))
+            else:
+                docnew.append(senttext)
             doctext.append(senttext)
         data.append(docnew)
         datatexts.append(doctext)
@@ -39,22 +53,31 @@ def load_data():
     return data, datatexts
 
 
-def movement(doc, winsize, ntops, ldamodel):
-    """ Calculates vectors for sents winsize, sort of sent 1-2 * 3-4, then 2-3 * 4-5 and so on. Be careful:
-    first span of a winsize isn't being split, so you can't get a split between 1st and 2nd sents if your
-    winsize is 2 """
+def create_vector(win, model):
+    """ Creates a vector for a window span. """
+    vec = [0] * len(model)
+    wingrams = []
+    for sent in win:
+        wingrams.extend(sent)
+    for ngram in wingrams:
+        if ngram in model.keys():
+            vec[model[ngram]] += 1
+    return vec, norm(vec)  # so we have both a vector itself and its norm in a tuple
+
+
+def movement(doc, winsize, model):
+    """ Calculates vectors for sents winsize, sort of sent 1-2 * 3-4, then 2-3 * 4-5 and so on. """
     vecs = []
     start = 0
-    # end = winsize
     end = 1
     for i in range(len(doc) - 1):
         # This way we have a list twice the size of intervals, so that calculating cosines we'd go with step = 2
         if doc[end:]:
-            vecs.append(create_vector(doc[start:end], ntops, ldamodel))
+            vecs.append(create_vector(doc[start:end], model))
             if len(doc) - 1 - end >= winsize:
-                vecs.append(create_vector(doc[end:end + winsize], ntops, ldamodel))
+                vecs.append(create_vector(doc[end:end + winsize], model))
             else:
-                vecs.append(create_vector(doc[end:], ntops, ldamodel))
+                vecs.append(create_vector(doc[end:], model))
         if end - start >= winsize:
             start += 1
         end += 1
@@ -122,36 +145,32 @@ def splitter(cos, doc):
 
 
 def topictiling():
-    dataset, rawtext = load_data()
+    nofgrams = 2
+    dataset, rawtext = load_data(nofgrams)
     print('Loading data...')
-    p = '/home/al/PythonFiles/files/disser/LDAs/'
-    filenames = [name for name in os.listdir(p) if not os.path.splitext(name)[1] or os.path.isdir(name)]
-    for modelname in filenames:
-        print(f'Loading LDA model {modelname}')
-        ldamodel = pickle.load(open(os.path.join(p, modelname), 'rb'))
-        topics = len(set(ldamodel.values()))
-        for windowsize in range(2, 11):
-            no = f'{modelname}_{windowsize}'  # for file naming
-            print(f'Window size {windowsize}: calculating vectors and cosine distances...')
-            breakpoints = {}
-            pathtores = f'/home/al/PythonFiles/files/disser/experiments/experiment_{no}.txt'  # path to resulting text
-            finale = open(pathtores, 'w', encoding='utf8')
-            for k in range(len(dataset)):
-                vectors = movement(dataset[k], windowsize, topics, ldamodel)
-                if vectors:
-                    cosines = cosine(vectors)
-                    res = splitter(cosines, rawtext[k])
-                    if res:
-                        for part in res[0]:
-                            for sent in part:
-                                print(*sent, file=finale)
-                            print('@@@@@@@@SEG@@@@@@@@', file=finale)
-                        breakpoints[k] = res[1]
-                    else:
-                        print('ZERO BREAKPOINTS FOUND', file=finale)
-                    print('\n~~~ENDOFDOC~~~\n', file=finale)
-            finale.close()
-            pickle.dump(breakpoints, open(f'/home/al/PythonFiles/files/disser/experiments/breakpoints_{no}', 'wb'))
+    model = make_ngrams(nofgrams)
+
+    for windowsize in range(2, 6):
+        no = f'{nofgrams}-gramPOSsolo_{windowsize}'
+        breakpoints = {}
+        pathtores = f'/home/al/PythonFiles/files/disser/experiments/experiment_{no}.txt'  # path to resulting text
+        finale = open(pathtores, 'w', encoding='utf8')
+        for k in range(len(dataset)):
+            vectors = movement(dataset[k], windowsize, model)
+            if vectors:
+                cosines = cosine(vectors)
+                res = splitter(cosines, rawtext[k])
+                if res:
+                    for part in res[0]:
+                        for sent in part:
+                            print(*sent, file=finale)
+                        print('@@@@@@@@SEG@@@@@@@@', file=finale)
+                    breakpoints[k] = res[1]
+                else:
+                    print('ZERO BREAKPOINTS FOUND', file=finale)
+                print('\n~~~ENDOFDOC~~~\n', file=finale)
+        finale.close()
+        pickle.dump(breakpoints, open(f'/home/al/PythonFiles/files/disser/experiments/breakpoints_{no}', 'wb'))
 
 
 if __name__ == '__main__':
