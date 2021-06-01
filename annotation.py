@@ -43,22 +43,27 @@ def main():
     funcs = dict(getmembers(process, isfunction))
     print('Available processes as far:', *list(funcs.keys()))
     choiceprocess = input('Which one we use?\n')
+    a_or_r = input('IMParser(1) or RNNMorph(0)?\n')
     processfunc = funcs.get(choiceprocess)
     if not processfunc:
         sys.exit('Something went awry! Look what u\' re typing')
-    print('Full(1) or small(2)? Beware! full dataset is damn huge!')
-    choicefs = int(input())
-    if choicefs == 1:
+    # print('Full(1) or small(2)? Beware! full dataset is damn huge!')
+    # choicefs = int(input())
+    # if choicefs == 1:
+    if not a_or_r:
         dataset = load_fulldata(processfunc)
-    elif choicefs == 2:
-        p = '/home/al/PythonFiles/files/disser/readydata/morpho/'
-        filenames = [name for name in os.listdir(p) if not os.path.splitext(name)[1] or os.path.isdir(name)]
-        print('Your fighters are as follows:')
-        print(*filenames)
-        fighter = input('Choose your fighter: ')
-        dataset = load_smalldata(fighter, processfunc)
     else:
-        sys.exit('U dumbass')  # why did I do that?..
+        print('Started loading IMP data')
+        dataset = processfunc()
+    # elif choicefs == 2:
+    #     p = '/home/al/PythonFiles/files/disser/readydata/morpho/'
+    #     filenames = [name for name in os.listdir(p) if not os.path.splitext(name)[1] or os.path.isdir(name)]
+    #     print('Your fighters are as follows:')
+    #     print(*filenames)
+    #     fighter = input('Choose your fighter: ')
+    #     dataset = load_smalldata(fighter, processfunc)
+    # else:
+    #     sys.exit('U dumbass')  # why did I do that?..
 
     print('"""datasets loaded and processed"""')
 

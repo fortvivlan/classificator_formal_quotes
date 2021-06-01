@@ -6,7 +6,7 @@ import pandas as pd
 
 def main():
     goldset = pickle.load(open('/home/al/PythonFiles/files/disser/readydata/annot500inds', 'rb'))
-    p = '/home/al/PythonFiles/files/disser/experiments/'
+    p = '/home/al/PythonFiles/files/disser/experimentsthres1.5/'
     autosets = {name[12:]: os.path.join(p, name) for name in os.listdir(p) if name.startswith('breakpoints_')}
     texts = pickle.load(open('/home/al/PythonFiles/files/disser/readydata/lengthspartial', 'rb'))
     result = defaultdict(dict)
@@ -46,7 +46,7 @@ def main():
         result[name]['Close call'] = closecall
 
     df = pd.DataFrame.from_dict(result, orient='index')
-    df.to_excel('/home/al/PythonFiles/files/disser/breakpoints_total.xlsx')
+    df.to_excel('breakpoints_total_thres1-5.xlsx')
 
 
 if __name__ == '__main__':

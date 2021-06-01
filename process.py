@@ -1,6 +1,8 @@
 from morphoclass import MorphoToken
 from collections import Counter
 import pickle
+import pyconll
+import os
 
 
 def basetopic(dataset):
@@ -146,3 +148,35 @@ def pronspartspunct(dataset):
             newdoc.extend([token.lemma for token in sent if token.category != 'word' or token.pos in {'PRON', 'PART'}])
         dataset[i] = newdoc
     return dataset
+
+
+def imp_syntax():
+    """Syntactic and morphological features instead of words"""
+    data = []
+    root = '/home/al/PythonFiles/files/disser/readydata/anastasyev'
+    dirs = os.listdir(root)
+    for folder in dirs:
+        if folder == 'PALJ':
+            continue
+        files = os.listdir(os.path.join(root, folder))
+        for name in files:
+            path = os.path.join(root, folder, name)
+            with open(path, 'r', encoding='utf8') as file:
+                doctoparse = ''
+                doc = []
+                for line in file:
+                    if '</text>' in line and doctoparse:
+                        parse = pyconll.load_from_string(doctoparse)
+                        for sentence in parse:
+                            for token in sentence:
+                                if token.upos == 'PUNCT':
+                                    doc.append(token.form)
+                                elif token.deprel != '_':
+                                    doc.append(token.deprel + str(token.feats))
+                        doctoparse = ''
+                        data.append(doc)
+                        doc = []
+                    elif '<text>' not in line and '</text>' not in line:
+                        doctoparse += line
+        print(f'{folder} added')
+    return data

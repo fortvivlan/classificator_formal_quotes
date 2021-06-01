@@ -4,9 +4,9 @@ from morphoclass import MorphoToken
 
 
 def segmenter(dataset):
-    cpattern = r'\(c\)|\U000000A9|\(C\)|\(с\)|\(С\)|сказать|говорить|писать|написать|цитата|цитировать'
+    cpattern = r'\(c\)|\U000000A9|\(C\)|\(с\)|\(С\)|цитата|цитировать'
     quotepattern = '["«“‘”’„][^"«»“‘”’„]{15,}["“‘»”’„]'
-    lonequote = r'["«“‘”’„]'
+    lonequote = r'["«»“‘”’„]'
     resultingindexes = []
     for doc in dataset:
         inds = []
